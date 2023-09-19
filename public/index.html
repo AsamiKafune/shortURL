@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShortURL | MagicLab</title>
+</head>
+
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Kanit&display=swap');
+
+    body {
+        font-family: 'Kanit', sans-serif;
+        padding: 10px;
+        margin: 10px;
+    }
+
+    h1 {
+        padding: 0px;
+        margin: 0px;
+    }
+    h3 {
+        padding: 0px;
+        margin: 0px;
+    }
+
+    input {
+        background-color: rgba(0, 0, 0, 0.037);
+        padding: 10px;
+        border-radius: 10px;
+        border-width: 0px;
+        border-color: #0000004e;
+    }
+
+    input:hover {
+        background-color: rgba(0, 0, 0, 0.057);
+        outline: none;
+    }
+
+    input:focus {
+        background-color: rgba(0, 0, 0, 0.090);
+        outline: none;
+    }
+
+    button {
+        background-color: #f1f1f1;
+        padding: 10px;
+        border-radius: 10px;
+        outline: none;
+        border: none;
+        cursor: pointer;
+    }
+
+    button:hover {
+        background-color: #cacaca;
+        padding: 10px;
+        border-radius: 10px;
+        outline: none;
+        border: none;
+        cursor: pointer;
+    }
+</style>
+
+<center>
+    <div>
+        <h1>
+            ShortURL Tools
+        </h1>
+    </div>
+    <div>
+        <div>
+            <input type="text" placeholder="Name" id="_name">
+            <input type="text" placeholder="Full URL" id="_url">
+        </div>
+        <div style="margin-top: 10px;">
+            <button onclick="create()">Generate</button>
+        </div>
+        <div>
+            Your short URL is: <span id="shortURL" />
+        </div>
+    </div>
+</center>
+<div>
+    <div>
+        <h1>
+            Check URL
+        </h1>
+        <p style="margin: 0px; padding: 0px;">
+            <b><h3>Example</h3></b>http:localhost:2222/1hand6nkv0<br>"1hand6nkv0" is a short URL code
+        </p>
+    </div>
+    <div>
+        <input type="text" placeholder="Short URL Code or Name" id="_urlShort">
+        <button onclick="check_()">Check</button>
+    </div>
+    <div>
+        Data:
+    </div>
+    <pre id="URLData"></pre>
+</div>
+
+<body>
+
+</body>
+<script>
+    async function create() {
+        let _url = document.getElementById("_url").value ?? "";
+        let _name = document.getElementById("_name").value ?? "";
+
+        const regex = /^(http(s):\/\/.)[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)$/;
+        if (!regex.test(_url)) {
+            document.getElementById("_url").value = ""
+            document.getElementById("_name").value = ""
+            return alert("Invalid URL");
+        }
+
+        var myHeaders = new Headers();
+        myHeaders.append("Content-Type", "application/json");
+
+        fetch("/create", {
+            method: 'POST',
+            headers: myHeaders,
+            body: JSON.stringify({
+                "name": _name,
+                "url": _url
+            })
+        })
+            .then(response => response.text())
+            .then(result => {
+                let _res = JSON.parse(result)
+                if (_res.code != 1) {
+                    document.getElementById("_url").value = ""
+                    document.getElementById("_name").value = ""
+                    return alert(_res.msg)
+                } else {
+                    document.getElementById("_url").value = ""
+                    document.getElementById("_name").value = ""
+                    document.getElementById("shortURL").innerText = "\n"+window.location.href + _res.url.short +"\n"+window.location.href + _res.url.name
+                }
+            })
+            .catch(error => console.log('error', error));
+    }
+    async function check_() {
+        let _url = document.getElementById("_urlShort").value ?? "";
+        fetch("/data/" + _url)
+            .then(response => response.text())
+            .then(result => {
+                let _res = JSON.parse(result)
+                if (_res.code == 0) {
+                    document.getElementById("_urlShort").value = ""
+                    return alert(_res.msg)
+                } else {
+                    document.getElementById("URLData").innerText = JSON.stringify(_res, null, 4)
+                }
+            })
+            .catch(error => console.log('error', error));
+    }
+</script>
+</html>
